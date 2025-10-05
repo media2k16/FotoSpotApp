@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FotoSpots"
+        tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBMSbcRhLcvdirWgbYLvrwVF8E3p6W_Fjk" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
+
+
+
+        <!-- Startpunkt deiner App -->
+        <activity android:name=".SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Weitere Activities -->
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".RegisterActivity" />
+        <activity android:name=".CityListActivity" />
+        <activity android:name=".StreetListActivity" />
+        <activity android:name=".LocationDetailActivity" />
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".AddLocationActivity"/>
+        <activity android:name=".FavoritesActivity" />
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".MapActivity" />
+        <activity android:name=".AdminAddSpotActivity" />
+        <activity android:name=".AdminDashboardActivity"/>
+        <activity android:name=".UsernameActivity"/>
+        <activity android:name=".ChangelogActivity"/>
+        <activity android:name=".AdminSuggestionsActivity" />
+
+
+        <activity android:name=".FullscreenImageActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
+
+
+    </application>
+
+</manifest>

@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">FotoSpotz</string>
+    <string name="default_web_client_id">501081770120-d6lm79mjhtra7sicrlmqot734299g25n.apps.googleusercontent.com</string>
+
+
+
+    <string-array name="location_types">
+        <item>Automotive</item>
+        <item>Portrait</item>
+        <item>Allgemein</item>
+    </string-array>
+</resources>

@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.FotoSpots" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Farben für den Light Mode -->
+        <item name="colorPrimary">#000000</item>
+        <item name="colorPrimaryVariant">#121212</item> <!-- Etwas dunkler -->
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <item name="colorSecondary">#00BCD4</item>
+        <item name="colorOnSecondary">#000000</item>
+
+        <!-- Sichtbare Statusbar -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowLightStatusBar">true</item> <!-- true = dunkle Icons bei heller Leiste -->
+
+        <item name="android:windowBackground">#FFFFFF</item>
+        <item name="android:textColor">#000000</item>
+
+        <!-- ActionBar entfernen -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

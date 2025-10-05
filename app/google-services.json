@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "501081770120",
+    "project_id": "fotospot-65d0a",
+    "storage_bucket": "fotospot-65d0a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:501081770120:android:09693560daed8e8033f73d",
+        "android_client_info": {
+          "package_name": "com.photospot.fotospotapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "501081770120-89rbs8utsbcg40mjmuu6s5cejo5rl1pm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.photospot.fotospotapp",
+            "certificate_hash": "a29b8163bbad3f369af5a41dd01201fb38f63d65"
+          }
+        },
+        {
+          "client_id": "501081770120-shct1lkv34gogvm3jn882attfak775ci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuNN-61U63aYq5-lAH5Ewy_ew32Q8qYvM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "501081770120-shct1lkv34gogvm3jn882attfak775ci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:501081770120:android:2ddf13caba857b4c33f73d",
+        "android_client_info": {
+          "package_name": "com.photospot.fotospots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "501081770120-shct1lkv34gogvm3jn882attfak775ci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuNN-61U63aYq5-lAH5Ewy_ew32Q8qYvM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "501081770120-shct1lkv34gogvm3jn882attfak775ci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

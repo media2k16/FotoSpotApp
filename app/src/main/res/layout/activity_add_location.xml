@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="@android:color/white"
+    android:fitsSystemWindows="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Titel -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Location vorschlagen"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"
+            android:textColor="@android:color/black" />
+
+        <!-- Stadt -->
+        <EditText
+            android:id="@+id/cityField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Stadt"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Straße -->
+        <EditText
+            android:id="@+id/streetField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Straße"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Info -->
+        <EditText
+            android:id="@+id/infoField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Beschreibung / Info"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Typ -->
+        <EditText
+            android:id="@+id/typeField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Typ (z. B. Automotive, Portraits)"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Latitude -->
+        <EditText
+            android:id="@+id/latitudeField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Breitengrad"
+            android:inputType="numberDecimal"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Longitude -->
+        <EditText
+            android:id="@+id/longitudeField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Längengrad"
+            android:inputType="numberDecimal"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Standort Button -->
+        <Button
+            android:id="@+id/getLocationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍 GPS / Standort holen"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#228B22"/>
+
+        <!-- Senden -->
+        <Button
+            android:id="@+id/sendButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Spot vorschlagen"
+            android:backgroundTint="#00BCD4"
+            android:padding="14dp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp" />
+
+    </LinearLayout>
+</ScrollView>

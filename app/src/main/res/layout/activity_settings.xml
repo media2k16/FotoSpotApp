@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Überschrift -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔧 Einstellungen"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Einstellungskarte -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:elevation="2dp"
+            android:layout_marginBottom="20dp"
+            android:clipToPadding="false"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:background="@drawable/rounded_card">
+
+            <TextView
+                android:id="@+id/profile"
+                style="@style/SettingsItemStyle"
+                android:text="👤 Profil" />
+
+            <TextView
+                android:id="@+id/openFavorites"
+                style="@style/SettingsItemStyle"
+                android:text="📖 Meine Favoriten" />
+
+            <TextView
+                android:id="@+id/addLocation"
+                style="@style/SettingsItemStyle"
+                android:text="📍 Location hinzufügen" />
+
+            <TextView
+                android:id="@+id/removeAds"
+                style="@style/SettingsItemStyle"
+                android:text="🚫 Werbung entfernen"
+                />
+
+            <TextView
+                android:id="@+id/reportBug"
+                style="@style/SettingsItemStyle"
+                android:text="🐞 Fehler melden" />
+
+            <!-- NEU: Changelog / Was ist neu -->
+            <TextView
+                android:id="@+id/changelogItem"
+                style="@style/SettingsItemStyle"
+                android:text="📝 Changelog / Was ist neu" />
+
+            <TextView
+                android:id="@+id/adminAccessBtn"
+                style="@style/SettingsItemStyle"
+                android:text="🛠️ Adminbereich"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/logout"
+                style="@style/SettingsItemStyle"
+                android:text="🔑 Abmelden" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

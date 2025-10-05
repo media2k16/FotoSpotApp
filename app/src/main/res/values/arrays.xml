@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="type_filter_array">
+        <item>Alle</item>
+        <item>Automotive</item>
+        <item>Portrait</item>
+<!--    <item>Menschen</item>-->
+<!--    <item>Tiere</item>-->
+<!--    <item>Landschaft</item>-->
+<!--    <item>Urban</item>-->
+<!--    <item>Lost Places</item>-->
+    </string-array>
+</resources>
