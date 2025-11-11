@@ -106,6 +106,54 @@
             android:layout_marginTop="8dp"
             android:backgroundTint="#228B22"/>
 
+        <TextView
+            android:id="@+id/tvImageLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bild"
+            android:textStyle="bold"
+            android:paddingTop="12dp"/>
+
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:background="#EEEEEE"
+            android:contentDescription="@string/app_name" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:paddingTop="8dp">
+
+            <Button
+                android:id="@+id/btnPickImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bild auswählen"
+                android:backgroundTint="#00BCD4" />
+
+            <Button
+                android:id="@+id/btnRemoveImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Entfernen"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#00BCD4" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
         <!-- Senden -->
         <Button
             android:id="@+id/sendButton"

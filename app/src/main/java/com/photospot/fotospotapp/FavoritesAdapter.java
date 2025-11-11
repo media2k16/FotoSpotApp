@@ -43,22 +43,25 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LocationModel location = favorites.get(position);
 
-        // Text setzen
-        holder.title.setText(location.getStreetName() != null ? location.getStreetName() : "Unbekannte Straße");
+        // Titel/Untertitel
+        String street = location.getStreetName();
+        holder.title.setText(street != null && !street.isEmpty() ? street : "Unbekannte Straße");
         holder.subtitle.setText(location.getInfo() != null ? location.getInfo() : "");
 
-        // Bild laden
-        if (location.getImage() != null && !location.getImage().isEmpty()) {
-            Glide.with(context).load(location.getImage()).into(holder.image);
+        // Bild laden: aus imageList das erste Bild verwenden
+        List<String> imgs = location.getImageList();
+        if (imgs != null && !imgs.isEmpty() && imgs.get(0) != null && !imgs.get(0).isEmpty()) {
+            Glide.with(context).load(imgs.get(0)).into(holder.image);
         } else {
-            holder.image.setImageResource(R.drawable.sample_location); // Fallback-Bild
+            holder.image.setImageResource(R.drawable.sample_location); // Fallback
         }
 
-        // Klick auf das Item
+        // Item-Klick -> Detailseite mit locationId
         holder.itemView.setOnClickListener(v -> {
-            if (location.getId() != null && !location.getId().isEmpty()) {
+            String id = location.getId();
+            if (id != null && !id.isEmpty()) {
                 Intent intent = new Intent(context, LocationDetailActivity.class);
-                intent.putExtra("locationId", location.getId());
+                intent.putExtra("locationId", id);
                 context.startActivity(intent);
             } else {
                 Toast.makeText(context, "Keine Location-ID übergeben", Toast.LENGTH_SHORT).show();
@@ -72,10 +75,13 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     }
 
     public void removeItem(int position) {
+        if (position < 0 || position >= favorites.size()) return;
         LocationModel location = favorites.get(position);
         favorites.remove(position);
         notifyItemRemoved(position);
-        deleteClickListener.onDeleteClick(position, location);
+        if (deleteClickListener != null) {
+            deleteClickListener.onDeleteClick(position, location);
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

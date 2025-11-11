@@ -1,14 +1,10 @@
 package com.photospot.fotospotapp;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,7 +20,7 @@ import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
-
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -38,9 +34,10 @@ public class SettingsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private TextView adminAccessBtn;
 
-    // 🔁 Neu für In-App-Kauf
+    // Billing (aus deiner Version)
     private BillingClient billingClient;
-    private final String PRODUCT_ID = "remove_ads"; // muss exakt wie in Play Console sein!
+    private final String PRODUCT_ID = "remove_ads"; // exakt wie in Play Console!
+    private boolean isAdmin = false; // <- NEU: Admin-Flag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,47 +56,48 @@ public class SettingsActivity extends AppCompatActivity {
 
         TextView profile = findViewById(R.id.profile);
         TextView addLocation = findViewById(R.id.addLocation);
-        TextView removeAds = findViewById(R.id.removeAds); // <- neu: Button in XML
+        TextView removeAds = findViewById(R.id.removeAds);
         TextView reportBug = findViewById(R.id.reportBug);
         TextView logout = findViewById(R.id.logout);
         TextView openFavorites = findViewById(R.id.openFavorites);
+        TextView changelogItem = findViewById(R.id.changelogItem);
         adminAccessBtn = findViewById(R.id.adminAccessBtn);
-        adminAccessBtn.setVisibility(View.GONE); // Standardmäßig versteckt
+        adminAccessBtn.setVisibility(View.GONE); // standardmäßig versteckt
 
-        // Wenn Nutzer eingeloggt, Adminstatus prüfen
+        // Adminstatus prüfen (nur wenn eingeloggt)
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.getEmail() != null) {
             checkIfAdmin(currentUser.getEmail());
         }
 
-        // BillingClient initialisieren
+        // Billing vorbereiten
         setupBillingClient();
 
         // Klick-Events
         profile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
         addLocation.setOnClickListener(v -> startActivity(new Intent(this, AddLocationActivity.class)));
         openFavorites.setOnClickListener(v -> startActivity(new Intent(this, FavoritesActivity.class)));
-
-        // 🚫 Werbung entfernen (In-App-Kauf starten)
         removeAds.setOnClickListener(v -> launchPurchaseFlow());
 
-        //Fehler melden
+        // Fehler melden (mit Fallback)
         reportBug.setOnClickListener(v -> {
-            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-            emailIntent.setData(Uri.parse("mailto:"));
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"));
             emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"bugreport@fotospotz.de"});
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Fehler melden - FotoSpotz");
-            startActivity(Intent.createChooser(emailIntent, "Fehler melden"));
+            if (emailIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(Intent.createChooser(emailIntent, "Fehler melden"));
+            } else {
+                Toast.makeText(this, "Kein E-Mail-Client installiert", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        TextView changelogItem = findViewById(R.id.changelogItem);
         changelogItem.setOnClickListener(v -> {
             Intent i = new Intent(SettingsActivity.this, ChangelogActivity.class);
             i.putExtra("launched_from_settings", true);
             startActivity(i);
         });
 
-        //Logout
+        // Logout
         logout.setOnClickListener(v -> {
             mAuth.signOut();
             Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
@@ -108,72 +106,48 @@ public class SettingsActivity extends AppCompatActivity {
             finish();
         });
 
-        adminAccessBtn.setOnClickListener(v -> showAdminLoginDialog());
+        // 🔐 Admin-Button: kein Passwort mehr – Rolle prüfen und öffnen
+        adminAccessBtn.setOnClickListener(v -> {
+            if (!isAdmin) {
+                Toast.makeText(this, "Kein Admin-Zugriff", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            FirebaseUser u = mAuth.getCurrentUser();
+            if (u == null || u.getEmail() == null) {
+                Toast.makeText(this, "Bitte erneut anmelden", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // bei Klick sicherheitshalber frisch gegen Firestore prüfen
+            db.collection("admins").document(u.getEmail()).get()
+                    .addOnSuccessListener(doc -> {
+                        String role = doc.getString("role");
+                        if ("admin".equals(role)) {
+                            startActivity(new Intent(this, AdminDashboardActivity.class));
+                        } else {
+                            Toast.makeText(this, "Kein Admin-Zugriff", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Fehler beim Prüfen des Adminstatus", Toast.LENGTH_SHORT).show()
+                    );
+        });
     }
 
-    // Prüfe ob E-Mail in Firestore als Admin eingetragen ist
+    /** Prüft die Adminrolle in Firestore und blendet den Button ein/aus. */
     private void checkIfAdmin(String email) {
         db.collection("admins").document(email).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     String role = documentSnapshot.getString("role");
-                    if ("admin".equals(role)) {
-                        adminAccessBtn.setVisibility(View.VISIBLE);
-                    }
+                    isAdmin = "admin".equals(role);
+                    adminAccessBtn.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Fehler beim Prüfen des Adminstatus", Toast.LENGTH_SHORT).show()
                 );
     }
 
-    // Passwortdialog anzeigen
-    private void showAdminLoginDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("🔐 Admin-Login");
+    /* ==================== Billing (unverändert + deine Logik) ==================== */
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(50, 40, 50, 10);
-
-        final EditText input = new EditText(this);
-        input.setHint("Admin-Passwort eingeben");
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        input.setBackgroundResource(android.R.drawable.edit_text);
-        input.setPadding(20, 20, 20, 20);
-        layout.addView(input);
-
-        final TextView toggleVisibility = new TextView(this);
-        toggleVisibility.setText("👁️ Passwort anzeigen");
-        toggleVisibility.setPadding(20, 10, 20, 20);
-        toggleVisibility.setTextSize(14);
-        toggleVisibility.setOnClickListener(v -> {
-            if (input.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
-                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                toggleVisibility.setText("🚫👁️ Passwort verbergen");
-            } else {
-                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                toggleVisibility.setText("👁️ Passwort anzeigen");
-            }
-            input.setSelection(input.getText().length());
-        });
-        layout.addView(toggleVisibility);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Login", (dialog, which) -> {
-            String enteredPassword = input.getText().toString().trim();
-            if (enteredPassword.equals("##FoSpW0401!")) {
-                startActivity(new Intent(this, AdminDashboardActivity.class));
-            } else {
-                Toast.makeText(this, "❌ Falsches Passwort", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.setNegativeButton("Abbrechen", (dialog, which) -> dialog.cancel());
-
-        builder.show();
-    }
-
-    // 🔁 Neu: BillingClient Setup
     private void setupBillingClient() {
         billingClient = BillingClient.newBuilder(this)
                 .setListener((billingResult, purchases) -> {
@@ -191,12 +165,30 @@ public class SettingsActivity extends AppCompatActivity {
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
-                // ready to go
+                // Optional: Käufe beim Start prüfen (Sync des Pro-Status)
+                billingClient.queryPurchasesAsync(
+                        QueryPurchasesParams.newBuilder()
+                                .setProductType(BillingClient.ProductType.INAPP)
+                                .build(),
+                        (result, purchases) -> {
+                            boolean pro = false;
+                            if (result.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
+                                for (Purchase p : purchases) {
+                                    if (p.getProducts().contains(PRODUCT_ID)
+                                            && p.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                                        pro = true; break;
+                                    }
+                                }
+                            }
+                            getSharedPreferences("user_prefs", MODE_PRIVATE)
+                                    .edit().putBoolean("isProUser", pro).apply();
+                        }
+                );
             }
 
             @Override
             public void onBillingServiceDisconnected() {
-                // reconnect logic
+                // optional: reconnect-Strategie
             }
         });
     }
@@ -211,18 +203,22 @@ public class SettingsActivity extends AppCompatActivity {
         billingClient.queryProductDetailsAsync(
                 QueryProductDetailsParams.newBuilder().setProductList(productList).build(),
                 (billingResult, productDetailsList) -> {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && !productDetailsList.isEmpty()) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && productDetailsList != null && !productDetailsList.isEmpty()) {
                         ProductDetails productDetails = productDetailsList.get(0);
                         List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
-                                List.of(BillingFlowParams.ProductDetailsParams.newBuilder()
-                                        .setProductDetails(productDetails)
-                                        .build());
+                                java.util.Collections.singletonList(
+                                        BillingFlowParams.ProductDetailsParams.newBuilder()
+                                                .setProductDetails(productDetails)
+                                                .build()
+                                );
 
                         BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
                                 .setProductDetailsParamsList(productDetailsParamsList)
                                 .build();
 
                         billingClient.launchBillingFlow(this, billingFlowParams);
+                    } else {
+                        Toast.makeText(this, "Kauf nicht verfügbar", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -231,13 +227,11 @@ public class SettingsActivity extends AppCompatActivity {
     private void handlePurchase(Purchase purchase) {
         if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
             if (!purchase.isAcknowledged()) {
-                AcknowledgePurchaseParams acknowledgeParams =
-                        AcknowledgePurchaseParams.newBuilder()
-                                .setPurchaseToken(purchase.getPurchaseToken())
-                                .build();
-
-                billingClient.acknowledgePurchase(acknowledgeParams, billingResult -> {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
+                        .setPurchaseToken(purchase.getPurchaseToken())
+                        .build();
+                billingClient.acknowledgePurchase(params, result -> {
+                    if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         setProUser();
                     }
                 });
@@ -250,7 +244,6 @@ public class SettingsActivity extends AppCompatActivity {
     private void setProUser() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         prefs.edit().putBoolean("isProUser", true).apply();
-
         Toast.makeText(this, "✅ Werbung erfolgreich entfernt!", Toast.LENGTH_LONG).show();
     }
 }

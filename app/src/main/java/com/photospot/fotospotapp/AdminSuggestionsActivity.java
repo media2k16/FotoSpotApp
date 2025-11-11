@@ -55,6 +55,7 @@ public class AdminSuggestionsActivity extends AppCompatActivity implements Sugge
         progress.setVisibility(View.VISIBLE);
         db.collection("suggestions")
                 .whereEqualTo("status", "open")
+                .whereEqualTo("source", "app")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((snap, err) -> {
                     progress.setVisibility(View.GONE);
@@ -65,23 +66,40 @@ public class AdminSuggestionsActivity extends AppCompatActivity implements Sugge
                     if (snap == null) return;
 
                     for (DocumentChange dc : snap.getDocumentChanges()) {
-                        String id = dc.getDocument().getId();
-                        Suggestion s = Suggestion.from(dc.getDocument());
-                        s.id = id;
+                        try {
+                            Suggestion s = Suggestion.from(dc.getDocument());
+                            // Skippe alte/inkomplette Einträge ohne Bild
+                            if (s.imageUrl == null || s.imageUrl.isEmpty()) {
+                                continue;
+                            }
+                            s.id = dc.getDocument().getId();
 
-                        switch (dc.getType()) {
-                            case ADDED:
-                                items.add(dc.getNewIndex(), s);
-                                adapter.notifyItemInserted(dc.getNewIndex());
-                                break;
-                            case MODIFIED:
-                                items.set(dc.getOldIndex(), s);
-                                adapter.notifyItemChanged(dc.getOldIndex());
-                                break;
-                            case REMOVED:
-                                items.remove(dc.getOldIndex());
-                                adapter.notifyItemRemoved(dc.getOldIndex());
-                                break;
+                            switch (dc.getType()) {
+                                case ADDED:
+                                    items.add(dc.getNewIndex(), s);
+                                    adapter.notifyItemInserted(dc.getNewIndex());
+                                    break;
+
+                                case MODIFIED:
+                                    // Falls sich die Position ändert, sauber verschieben
+                                    if (dc.getOldIndex() == dc.getNewIndex()) {
+                                        items.set(dc.getOldIndex(), s);
+                                        adapter.notifyItemChanged(dc.getOldIndex());
+                                    } else {
+                                        items.remove(dc.getOldIndex());
+                                        items.add(dc.getNewIndex(), s);
+                                        adapter.notifyItemMoved(dc.getOldIndex(), dc.getNewIndex());
+                                        adapter.notifyItemChanged(dc.getNewIndex());
+                                    }
+                                    break;
+
+                                case REMOVED:
+                                    items.remove(dc.getOldIndex());
+                                    adapter.notifyItemRemoved(dc.getOldIndex());
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            android.util.Log.e("ADMIN", "Skip invalid doc: " + dc.getDocument().getId(), e);
                         }
                     }
                 });
@@ -89,34 +107,61 @@ public class AdminSuggestionsActivity extends AppCompatActivity implements Sugge
 
     @Override
     public void onApprove(@NonNull Suggestion s, int position) {
-        // Minimal: Bei “Approve” -> in "locations" übernehmen + Vorschlag auf "approved"
-        DocumentReference locRef = db.collection("locations").document();
-        // Passe dein Locations-Schema hier an:
+        // 1) Saubere, stabile ID aus Stadt+Straße erzeugen
+        String baseId = (s.city + "_" + s.street)
+                .toLowerCase()
+                .replaceAll("[^a-z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
+
+        DocumentReference locRef = db.collection("locations").document(baseId);
+
         HashMap<String, Object> data = new HashMap<>();
         data.put("streetName", s.street);
         data.put("city", s.city);
         data.put("info", s.note);
-        data.put("type", "Allgemein"); // ggf. aus Vorschlag ergänzen
         data.put("latitude", s.latitude);
         data.put("longitude", s.longitude);
         data.put("likes", 0);
-        data.put("createdAt", Timestamp.now());
-        data.put("imageList", java.util.Collections.emptyList()); // optional
+        data.put("createdAt", com.google.firebase.Timestamp.now());
 
-        locRef.set(data).addOnSuccessListener(unused -> {
-            db.collection("suggestions").document(s.id)
-                    .update("status", "approved", "approvedAt", Timestamp.now(), "locationId", locRef.getId())
-                    .addOnSuccessListener(v -> {
-                        Toast.makeText(this, "Vorschlag bestätigt", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(this, "Update fehlgeschlagen: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        // Bild: sowohl imageUrl (alt) als auch imageList (neu) speichern
+        data.put("imageUrl", s.imageUrl);
+        java.util.List<String> list = new java.util.ArrayList<>();
+        if (s.imageUrl != null && !s.imageUrl.isEmpty()) list.add(s.imageUrl);
+        data.put("imageList", list);
+
+        // Typ übernehmen (Fallback "Allgemein")
+        data.put("type", (s.type != null && !s.type.isEmpty()) ? s.type : "Allgemein");
+
+        // 2) Falls ID schon existiert (Duplikat), Timestamp anhängen
+        locRef.get().addOnSuccessListener(doc -> {
+            DocumentReference target = doc.exists()
+                    ? db.collection("locations").document(baseId + "_" + System.currentTimeMillis())
+                    : locRef;
+
+            target.set(data).addOnSuccessListener(unused -> {
+                db.collection("suggestions").document(s.id)
+                        .update("status", "approved",
+                                "approvedAt", com.google.firebase.Timestamp.now(),
+                                "locationId", target.getId())
+                        .addOnSuccessListener(v -> Toast.makeText(this, "Vorschlag bestätigt", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(this, "Update fehlgeschlagen: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }).addOnFailureListener(e ->
+                    Toast.makeText(this, "Location anlegen fehlgeschlagen: " + e.getMessage(), Toast.LENGTH_LONG).show()
+            );
         }).addOnFailureListener(e ->
-                Toast.makeText(this, "Location anlegen fehlgeschlagen: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Prüfung auf Duplikat fehlgeschlagen: " + e.getMessage(), Toast.LENGTH_LONG).show()
         );
     }
 
     @Override
     public void onReject(@NonNull Suggestion s, int position) {
+        // Optional: Bild aus Storage löschen
+        if (s.imageUrl != null && !s.imageUrl.isEmpty()) {
+            com.google.firebase.storage.FirebaseStorage.getInstance()
+                    .getReferenceFromUrl(s.imageUrl).delete();
+        }
+
         db.collection("suggestions").document(s.id)
                 .update("status", "rejected", "rejectedAt", Timestamp.now())
                 .addOnSuccessListener(unused -> Toast.makeText(this, "Abgelehnt", Toast.LENGTH_SHORT).show())

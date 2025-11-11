@@ -1,18 +1,20 @@
 package com.photospot.fotospotapp;
 
+import java.util.List;
+
 public class LocationModel {
     private String id;
-    private String image;
+    private String image; // wird teilweise noch gebraucht (ältere Strukturen)
+    private List<String> imageList; // 🔹 neue Variante für mehrere Bilder
     private String info;
     private String streetName;
     private String city;
     private String type;
 
-    // 🔹 Leerer Konstruktor (wird von Firebase benötigt)
-    public LocationModel() {
-    }
+    // 🔹 Leerer Konstruktor (Pflicht für Firestore)
+    public LocationModel() {}
 
-    // 🔹 Optionaler Konstruktor für manuelles Erstellen
+    // 🔹 Konstruktor für einzelne Bilder (alt)
     public LocationModel(String id, String image, String info, String streetName, String city, String type) {
         this.id = id;
         this.image = image;
@@ -20,7 +22,16 @@ public class LocationModel {
         this.streetName = streetName;
         this.city = city;
         this.type = type;
+    }
 
+    // 🔹 Konstruktor für mehrere Bilder (neu)
+    public LocationModel(String id, List<String> imageList, String info, String streetName, String city, String type) {
+        this.id = id;
+        this.imageList = imageList;
+        this.info = info;
+        this.streetName = streetName;
+        this.city = city;
+        this.type = type;
     }
 
     // 🔹 Getter & Setter
@@ -38,6 +49,14 @@ public class LocationModel {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public List<String> getImageList() {
+        return imageList;
+    }
+
+    public void setImageList(List<String> imageList) {
+        this.imageList = imageList;
     }
 
     public String getInfo() {

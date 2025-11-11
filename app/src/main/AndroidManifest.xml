@@ -59,6 +59,11 @@
         <activity android:name=".FullscreenImageActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
+        <activity
+            android:name=".ImagePreviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
 
 
     </application>
