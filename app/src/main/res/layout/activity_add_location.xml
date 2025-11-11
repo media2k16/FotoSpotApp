@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="20dp"
@@ -59,18 +58,6 @@
             android:textColorHint="#888888"
             android:layout_marginBottom="12dp" />
 
-        <!-- Typ -->
-        <EditText
-            android:id="@+id/typeField"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Typ (z. B. Automotive, Portraits)"
-            android:background="@drawable/bg_edittext"
-            android:padding="12dp"
-            android:textColor="@android:color/black"
-            android:textColorHint="#888888"
-            android:layout_marginBottom="12dp" />
-
         <!-- Latitude -->
         <EditText
             android:id="@+id/latitudeField"
@@ -95,47 +82,87 @@
             android:padding="12dp"
             android:textColor="@android:color/black"
             android:textColorHint="#888888"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="12dp" />
+
+        <!-- Typ  -->
+        <TextView
+            android:id="@+id/tvTypeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Geeignet für:"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:id="@+id/typeSpinnerBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_edittext"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:layout_marginBottom="12dp">
+
+            <Spinner
+                android:id="@+id/typeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown" />
+        </LinearLayout>
 
         <!-- Standort Button -->
         <Button
             android:id="@+id/getLocationButton"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="📍 GPS / Standort holen"
             android:layout_marginTop="8dp"
-            android:backgroundTint="#228B22"/>
+            android:backgroundTint="#00BCD4"
+            android:textColor="@android:color/white" />
 
+        <!-- Bild-Label -->
         <TextView
             android:id="@+id/tvImageLabel"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Bild"
             android:textStyle="bold"
-            android:paddingTop="12dp"/>
+            android:paddingTop="12dp"
+            android:layout_marginBottom="6dp" />
 
-        <ImageView
-            android:id="@+id/ivPreview"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:adjustViewBounds="true"
-            android:scaleType="centerCrop"
-            android:background="#EEEEEE"
-            android:contentDescription="@string/app_name" />
+        <!-- Bild-Vorschau im Karten-Look -->
+        <FrameLayout
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="@drawable/bg_edittext"
+            android:layout_marginBottom="8dp">
 
+            <ImageView
+                android:id="@+id/ivPreview"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/app_name" />
+        </FrameLayout>
+
+        <!-- Bild-Aktionen -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="end"
-            android:paddingTop="8dp">
+            android:paddingTop="4dp"
+            android:layout_marginBottom="8dp">
 
             <Button
                 android:id="@+id/btnPickImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Bild auswählen"
-                android:backgroundTint="#00BCD4" />
+                android:backgroundTint="#00BCD4"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/btnRemoveImage"
@@ -143,16 +170,18 @@
                 android:layout_height="wrap_content"
                 android:text="Entfernen"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="#00BCD4" />
+                android:backgroundTint="#9E9E9E"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
+        <!-- Progress -->
         <ProgressBar
             android:id="@+id/progress"
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <!-- Senden -->
         <Button
@@ -161,6 +190,7 @@
             android:layout_height="wrap_content"
             android:text="Spot vorschlagen"
             android:backgroundTint="#00BCD4"
+            android:textColor="@android:color/white"
             android:padding="14dp"
             android:textStyle="bold"
             android:layout_marginTop="12dp" />

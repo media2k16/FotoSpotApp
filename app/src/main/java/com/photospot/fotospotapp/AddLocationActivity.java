@@ -8,10 +8,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -43,8 +45,9 @@ public class AddLocationActivity extends AppCompatActivity {
     private Button sendButton, getLocationButton, btnPickImage, btnRemoveImage;
     private ImageView ivPreview;
     private ProgressBar progress;
-    private FusedLocationProviderClient fusedLocationClient;
+    private Spinner typeSpinner;
 
+    private FusedLocationProviderClient fusedLocationClient;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
 
@@ -78,10 +81,27 @@ public class AddLocationActivity extends AppCompatActivity {
         btnRemoveImage = findViewById(R.id.btnRemoveImage);
         ivPreview = findViewById(R.id.ivPreview);
         progress = findViewById(R.id.progress);
+        typeSpinner = findViewById(R.id.typeSpinner);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
+
+        // === Spinner befüllen (mit Guard gegen fehlenden View) ===
+        if (typeSpinner != null) {
+            ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
+                    this,
+                    R.array.location_types,                      // -> res/values/strings.xml
+                    android.R.layout.simple_spinner_item
+            );
+            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            typeSpinner.setAdapter(spinnerAdapter);
+            int defaultPos = spinnerAdapter.getPosition("Automotive");
+            if (defaultPos >= 0) typeSpinner.setSelection(defaultPos);
+        } else {
+            Log.e(TAG, "typeSpinner ist NULL – fehlt im Layout activity_add_location.xml?");
+            Toast.makeText(this, "Hinweis: Typ-Dropdown nicht im Layout gefunden. Es wird 'Automotive' verwendet.", Toast.LENGTH_LONG).show();
+        }
 
         // === Image Picker (mit sicherer Vorschau) ===
         pickImageLauncher = registerForActivityResult(
@@ -90,7 +110,7 @@ public class AddLocationActivity extends AppCompatActivity {
                     if (uri != null) {
                         imageUri = uri;
                         try {
-                            ivPreview.setImageBitmap(loadScaledBitmap(uri, 1024)); // Vorschau skaliert
+                            ivPreview.setImageBitmap(loadScaledBitmap(uri, 1024));
                         } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(this, "Fehler beim Laden des Bilds", Toast.LENGTH_SHORT).show();
@@ -182,13 +202,20 @@ public class AddLocationActivity extends AppCompatActivity {
             StorageReference ref = storage.getReference().child(path);
             Log.d("UPLOAD", "📁 Pfad: " + ref.toString());
 
-            // === Upload starten (Original-Datei; Vorschau bleibt skaliert) ===
+            // === Upload starten (Original-Datei) ===
             ref.putFile(imageUri)
                     .continueWithTask(task -> {
                         if (!task.isSuccessful()) throw task.getException();
                         return ref.getDownloadUrl();
                     })
                     .addOnSuccessListener(downloadUri -> {
+                        // Typ aus Spinner holen (fallback, falls Spinner fehlt)
+                        String type = "Automotive";
+                        if (typeSpinner != null && typeSpinner.getSelectedItem() != null) {
+                            type = String.valueOf(typeSpinner.getSelectedItem()).trim();
+                            if (type.isEmpty()) type = "Automotive";
+                        }
+
                         // === Firestore speichern ===
                         Map<String, Object> suggestion = new HashMap<>();
                         suggestion.put("city", city);
@@ -202,10 +229,11 @@ public class AddLocationActivity extends AppCompatActivity {
                         suggestion.put("submittedByEmail", u.getEmail());
                         suggestion.put("submittedByName", u.getDisplayName() != null ? u.getDisplayName() : "nicht übermittelt");
                         suggestion.put("source", "app");
+                        suggestion.put("type", type); // wichtig
 
                         db.collection("suggestions").add(suggestion)
                                 .addOnSuccessListener(docRef -> {
-                                    // === Optional: E-Mail-Function ===
+                                    // Optional: E-Mail-Function
                                     Map<String, Object> emailData = new HashMap<>();
                                     emailData.put("city", city);
                                     emailData.put("street", street);
@@ -221,7 +249,7 @@ public class AddLocationActivity extends AppCompatActivity {
                                             .call(emailData)
                                             .addOnCompleteListener(task2 -> {
                                                 setLoading(false);
-                                                Toast.makeText(this, "Danke! Dein Spot ist in Prüfung \uD83D\uDE0A ", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(this, "Danke! Dein Spot ist in Prüfung 🙂", Toast.LENGTH_LONG).show();
                                                 finish();
                                             });
                                 })
@@ -271,18 +299,15 @@ public class AddLocationActivity extends AppCompatActivity {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
 
-        // 1) nur Maße einlesen
         InputStream is = getContentResolver().openInputStream(uri);
         BitmapFactory.decodeStream(is, null, opts);
         if (is != null) is.close();
 
-        // 2) Skalierungsfaktor berechnen
         int scale = 1;
         while (opts.outWidth / scale > maxSize || opts.outHeight / scale > maxSize) {
             scale *= 2;
         }
 
-        // 3) mit inSampleSize neu einlesen (runterskaliert)
         opts.inSampleSize = scale;
         opts.inJustDecodeBounds = false;
         is = getContentResolver().openInputStream(uri);
