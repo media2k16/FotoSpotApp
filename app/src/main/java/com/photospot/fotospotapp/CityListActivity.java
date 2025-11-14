@@ -1,9 +1,6 @@
 package com.photospot.fotospotapp;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,19 +29,23 @@ public class CityListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_city_list);
 
-        MobileAds.initialize(this, initializationStatus -> {});
+        // 1) AdMob + Testgerät initialisieren
+        AdmobHelper.initAdmob(this);
+
+        // 2) Banner laden
         AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        // Toolbar einbinden
+        // 3) Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // 4) RecyclerView
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Städte-Liste
+        // 5) Städte-Liste
         allCities = Arrays.asList(
                 "Bottrop", "Dortmund", "Duisburg", "Düsseldorf", "Gera"
         );

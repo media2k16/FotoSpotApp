@@ -28,6 +28,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Intent;
+import android.view.View;
+import android.widget.TextView;
+
 public class SettingsActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -63,6 +67,10 @@ public class SettingsActivity extends AppCompatActivity {
         TextView changelogItem = findViewById(R.id.changelogItem);
         adminAccessBtn = findViewById(R.id.adminAccessBtn);
         adminAccessBtn.setVisibility(View.GONE); // standardmäßig versteckt
+        TextView btnAboutApp = findViewById(R.id.btnAboutApp);
+
+        btnAboutApp.setOnClickListener(v ->
+                startActivity(new Intent(SettingsActivity.this, AboutAppActivity.class)));
 
         // Adminstatus prüfen (nur wenn eingeloggt)
         FirebaseUser currentUser = mAuth.getCurrentUser();

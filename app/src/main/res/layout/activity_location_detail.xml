@@ -107,7 +107,7 @@
                 android:id="@+id/locationType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Automotive, Porträts ..."
+                android:text="Automotive, Portrait ..."
                 android:textSize="16sp"
                 android:textStyle="italic" />
 
@@ -177,8 +177,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        ads:adUnitId="ca-app-pub-3309279531146733/9359074758"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

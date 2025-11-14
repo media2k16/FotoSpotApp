@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Titel & Version -->
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FotoSpotz"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dies ist eine private App für Fotolocations.
+Mit FotoSpotz kannst du Spots entdecken, speichern und teilen."
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Karte für Rechtliches -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rechtliches"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Impressum -->
+        <LinearLayout
+            android:id="@+id/itemImpressum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:background="@drawable/rounded_card"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Impressum"
+                android:textSize="15sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Anbieterinformationen und Kontakt"
+                android:textSize="13sp"
+                android:textColor="#777777" />
+        </LinearLayout>
+
+        <!-- Datenschutz -->
+        <LinearLayout
+            android:id="@+id/itemDatenschutz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:background="@drawable/rounded_card"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Datenschutzerklärung"
+                android:textSize="15sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Informationen zur Verarbeitung deiner Daten"
+                android:textSize="13sp"
+                android:textColor="#777777" />
+        </LinearLayout>
+
+        <!-- AGB -->
+        <LinearLayout
+            android:id="@+id/itemAGB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:background="@drawable/rounded_card"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nutzungsbedingungen / AGB"
+                android:textSize="15sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Regeln für die Nutzung von FotoSpotz"
+                android:textSize="13sp"
+                android:textColor="#777777" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

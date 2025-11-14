@@ -70,6 +70,11 @@
                 android:text="📝 Changelog / Was ist neu" />
 
             <TextView
+                android:id="@+id/btnAboutApp"
+                style="@style/SettingsItemStyle"
+                android:text="📲 Über diese App" />
+
+            <TextView
                 android:id="@+id/adminAccessBtn"
                 style="@style/SettingsItemStyle"
                 android:text="🛠️ Adminbereich"

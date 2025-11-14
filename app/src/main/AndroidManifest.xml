@@ -25,7 +25,7 @@
             android:value="AIzaSyBMSbcRhLcvdirWgbYLvrwVF8E3p6W_Fjk" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-3309279513146733~3818837764"/>
 
 
 
@@ -54,6 +54,7 @@
         <activity android:name=".UsernameActivity"/>
         <activity android:name=".ChangelogActivity"/>
         <activity android:name=".AdminSuggestionsActivity" />
+        <activity android:name=".AboutAppActivity" />
 
 
         <activity android:name=".FullscreenImageActivity"

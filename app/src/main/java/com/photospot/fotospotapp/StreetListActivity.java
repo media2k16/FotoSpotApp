@@ -14,7 +14,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -28,16 +27,20 @@ public class StreetListActivity extends AppCompatActivity {
     private List<String> streetList;
     private String cityName;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_street_list);
-        MobileAds.initialize(this, initializationStatus -> {});
+
+        // ✅ AdMob + Testgerät initialisieren
+        AdmobHelper.initAdmob(this);
+
+        // ✅ Banner laden
         AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
+        // ✅ Statusbar Insets
         View rootView = findViewById(android.R.id.content);
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
             int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
@@ -45,9 +48,7 @@ public class StreetListActivity extends AppCompatActivity {
             return insets;
         });
 
-
         cityName = getIntent().getStringExtra("cityName");
-
         if (cityName == null) {
             finish();
             return;
