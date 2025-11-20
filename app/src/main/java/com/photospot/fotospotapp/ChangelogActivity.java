@@ -1,7 +1,5 @@
 package com.photospot.fotospotapp;
 
-import static android.content.Intent.getIntent;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -80,16 +78,29 @@ public class ChangelogActivity extends AppCompatActivity {
 
     private void loadChangelogFromFirestore() {
         db.collection("changelog")
+                // 👉 Nur Beta-Einträge laden
+                .whereEqualTo("phase", "beta")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        changelogText.setText(
+                                "Aktuell gibt es noch keine Changelog-Einträge für die Beta.\n\n" +
+                                        "Sobald neue Updates veröffentlicht werden, erscheinen sie hier. 😊"
+                        );
+                        return;
+                    }
+
                     StringBuilder changelogBuilder = new StringBuilder();
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         String version = doc.getString("versionName");
                         @SuppressWarnings("unchecked")
                         List<String> entries = (List<String>) doc.get("entries");
 
-                        changelogBuilder.append("📦 Version ").append(version != null ? version : "?").append(":\n");
+                        changelogBuilder.append("📦 Version ")
+                                .append(version != null ? version : "?")
+                                .append(":\n");
+
                         if (entries != null) {
                             for (String entry : entries) {
                                 changelogBuilder.append("• ").append(entry).append("\n");
@@ -99,6 +110,7 @@ public class ChangelogActivity extends AppCompatActivity {
                     }
                     changelogText.setText(changelogBuilder.toString());
                 })
-                .addOnFailureListener(e -> changelogText.setText("Fehler beim Laden des Changelogs"));
+                .addOnFailureListener(e ->
+                        changelogText.setText("Fehler beim Laden des Changelogs: " + e.getMessage()));
     }
 }

@@ -16,7 +16,11 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.*;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -61,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        mGoogleSignInClient.signOut(); // damit jedes Mal neue Auswahl erscheint
+        mGoogleSignInClient.signOut();
     }
 
     @Override
@@ -71,24 +75,7 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         if (currentUser != null) {
-            String uid = currentUser.getUid();
-
-            db.collection("users").document(uid).get()
-                    .addOnSuccessListener(snapshot -> {
-                        if (snapshot.exists() && snapshot.contains("username")) {
-                            startActivity(new Intent(this, ChangelogActivity.class));
-                            finish();
-                        } else {
-                            Intent intent = new Intent(this, UsernameActivity.class);
-                            intent.putExtra("uid", uid);
-                            intent.putExtra("email", currentUser.getEmail());
-                            startActivity(intent);
-                            finish();
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Fehler beim Benutzer-Check", Toast.LENGTH_SHORT).show();
-                    });
+            checkUserSetup(currentUser.getUid(), currentUser.getEmail());
         }
     }
 
@@ -97,33 +84,62 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordField.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Bitte E-Mail und Passwort eingeben ☝\uFE0F", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bitte E-Mail und Passwort eingeben ☝️", Toast.LENGTH_SHORT).show();
             return;
         }
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        createUserIfNotExists();
-                        startActivity(new Intent(this, ChangelogActivity.class));
-                        finish();
+                        FirebaseUser currentUser = mAuth.getCurrentUser();
+                        checkUserSetup(currentUser.getUid(), currentUser.getEmail());
                     } else {
                         Toast.makeText(this, "Login fehlgeschlagen ❌", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void createUserIfNotExists() {
-        String userId = mAuth.getCurrentUser().getUid();
-        String email = mAuth.getCurrentUser().getEmail();
-
-        db.collection("users").document(userId).get()
+    private void checkUserSetup(String uid, String email) {
+        db.collection("users").document(uid).get()
                 .addOnSuccessListener(snapshot -> {
                     if (!snapshot.exists()) {
-                        User user = new User(email, "");
-                        db.collection("users").document(userId).set(user);
+                        createUserDocument(uid, email);
+                    } else if (!snapshot.contains("username")) {
+                        goToUsername(uid, email);
+                    } else {
+                        goToApp();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Fehler beim Benutzer-Check: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void createUserDocument(String uid, String email) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("email", email);
+        user.put("username", "");
+        user.put("profileImageUrl", "");
+        user.put("createdAt", FieldValue.serverTimestamp());
+
+        db.collection("users").document(uid)
+                .set(user)
+                .addOnSuccessListener(aVoid -> goToUsername(uid, email))
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Fehler beim Nutzer anlegen: " + e.getMessage(), Toast.LENGTH_LONG).show());
+    }
+
+    private void goToUsername(String uid, String email) {
+        Intent intent = new Intent(this, UsernameActivity.class);
+        intent.putExtra("uid", uid);
+        intent.putExtra("email", email);
+        startActivity(intent);
+        finish();
+    }
+
+    private void goToApp() {
+        startActivity(new Intent(this, ChangelogActivity.class));
+        finish();
     }
 
     private void showForgotPasswordDialog() {
@@ -181,22 +197,7 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        String uid = user.getUid();
-                        String email = user.getEmail();
-
-                        db.collection("users").document(uid).get()
-                                .addOnSuccessListener(snapshot -> {
-                                    if (!snapshot.exists() || !snapshot.contains("username")) {
-                                        Intent intent = new Intent(LoginActivity.this, UsernameActivity.class);
-                                        intent.putExtra("uid", uid);
-                                        intent.putExtra("email", email);
-                                        startActivity(intent);
-                                        finish();
-                                    } else {
-                                        startActivity(new Intent(LoginActivity.this, ChangelogActivity.class));
-                                        finish();
-                                    }
-                                });
+                        checkUserSetup(user.getUid(), user.getEmail());
                     } else {
                         Toast.makeText(this, "Firebase Auth fehlgeschlagen", Toast.LENGTH_SHORT).show();
                     }

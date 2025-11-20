@@ -3,7 +3,6 @@ package com.photospot.fotospotapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class RegisterActivity extends AppCompatActivity {
             field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             toggleIcon.setImageResource(R.drawable.ic_eye);
         }
-        field.setSelection(field.getText().length()); // Cursor an das Ende setzen
+        field.setSelection(field.getText().length());
     }
 
     private void registerUser() {
@@ -90,7 +90,7 @@ public class RegisterActivity extends AppCompatActivity {
         String confirmPassword = confirmPasswordField.getText().toString().trim();
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(this, "Bitte fülle alle Felder aus \uD83D\uDCC4", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bitte fülle alle Felder aus 📄", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -106,28 +106,41 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                    .setDisplayName(username)
-                                    .build();
-                            user.updateProfile(profileUpdates);
-
-                            Map<String, Object> userMap = new HashMap<>();
-                            userMap.put("username", username);
-                            userMap.put("email", email);
-                            userMap.put("profileImageUrl", "");
-
-                            db.collection("users").document(user.getUid()).set(userMap);
-                        }
-
-                        Toast.makeText(this, "Registrierung erfolgreich \uD83D\uDC4D", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(this, CityListActivity.class));
-                        finish();
-                    } else {
+                    if (!task.isSuccessful()) {
                         Toast.makeText(this, "Registrierung fehlgeschlagen ❌", Toast.LENGTH_SHORT).show();
+                        return;
                     }
+
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user == null) {
+                        Toast.makeText(this, "Registrierungsfehler (kein User)", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Firebase Display Name setzen
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(username)
+                            .build();
+                    user.updateProfile(profileUpdates);
+
+                    // Firestore User-Dokument
+                    Map<String, Object> userMap = new HashMap<>();
+                    userMap.put("username", username);
+                    userMap.put("email", email);
+                    userMap.put("profileImageUrl", "");
+                    userMap.put("createdAt", FieldValue.serverTimestamp());
+
+                    db.collection("users")
+                            .document(user.getUid())
+                            .set(userMap)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Registrierung erfolgreich 👍", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(this, CityListActivity.class));
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Fehler beim Speichern: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
                 });
     }
 
